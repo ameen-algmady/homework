@@ -10,6 +10,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
    <!DOCTYPE html>
+<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
@@ -27,9 +28,12 @@
     <!-- إعدادات PWA -->
     <meta name="theme-color" content="#6c5ce7">
     <meta name="description" content="نظام إدخال الواجبات الأسبوعية للمعلمين">
-    <link rel="manifest" href="https://ameen-algmady.github.io/homework/manifest.json">
-    <link rel="icon" type="image/png" href="https://ameen-algmady.github.io/homework/icon-192x192.png">
-    <link rel="apple-touch-icon" href="https://ameen-algmady.github.io/homework/icon-192x192.png">
+    
+    <!-- روابط PWA - استخدم المسارات النسبية -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" href="./icon-192x192.png">
+    <link rel="apple-touch-icon" href="./icon-192x192.png">
+    
     <style>
         /* إعدادات عامة */
         * {
@@ -619,6 +623,51 @@
         .form-control:valid {
             border-color: #55efc4;
         }
+        .btn-install {
+            background: linear-gradient(135deg, #00cec9 0%, #0984e3 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(9, 132, 227, 0.3);
+            display: none; /* مخفي افتراضيًا */
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            z-index: 1000;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
+        
+        .btn-install:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(9, 132, 227, 0.4);
+        }
+        
+        .btn-install.installed {
+            background: linear-gradient(135deg, #00b894 0%, #55efc4 100%);
+            cursor: default;
+        }
+        
+        .btn-install.installed:hover {
+            transform: none;
+            box-shadow: 0 4px 12px rgba(9, 132, 227, 0.3);
+        }
+        
+        @media (min-width: 769px) {
+            .btn-install {
+                position: absolute;
+                left: 20px;
+                top: 20px;
+                bottom: auto;
+                right: auto;
+            }
+        }
     </style>
 </head>
 <body>
@@ -634,18 +683,13 @@
     
     <!-- المحتوى الرئيسي -->
     <div id="appContent">
-        <!-- الهيدر -->
-        <div class="app-header">
-            <button id="installButton" class="btn-install" style="display: none;">
-                <i class="fas fa-download"></i> تثبيت التطبيق
-            </button>
-            
-            <h1 class="app-title">
-                <i class="fas fa-chalkboard-teacher"></i>
-                نظام الواجبات الأسبوعية
-            </h1>
-            <p class="app-subtitle">التجميع المركزي - مصمم خصيصاً للهاتف</p>
-        </div>
+          <div class="app-header">
+        <h1 class="app-title">
+            <i class="fas fa-chalkboard-teacher"></i>
+            نظام الواجبات الأسبوعية
+        </h1>
+        <p class="app-subtitle">التجميع المركزي - مصمم خصيصاً للهاتف</p>
+    </div>
         
         <!-- البيانات الأساسية -->
         <div class="card">
