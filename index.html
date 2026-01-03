@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>📚 نظام الواجبات المنزلية</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- إعدادات PWA -->
+    <meta name="theme-color" content="#6c5ce7">
+    <meta name="description" content="نظام إدخال الواجبات الأسبوعية للمعلمين">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+    
+    <style>
+        /* إعدادات عامة */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        /* شاشة التحميل */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+        
+        .splash-icon {
+            font-size: 4rem;
+            color: white;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+        
+        .splash-title {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .splash-text {
+            color: white;
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        /* المحتوى الرئيسي */
+        #appContent {
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
+            padding-bottom: 80px;
+        }
+        
+        /* الهيدر */
+        .app-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 25px 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+        
+        .app-title {
+            color: #2d3436;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .app-title i {
+            color: #6c5ce7;
+            font-size: 2.2rem;
+        }
+        
+        .app-subtitle {
+            color: #636e72;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        /* زر تثبيت التطبيق */
+        .btn-install {
+            background: linear-gradient(135deg, #00cec9 0%, #0984e3 100%);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(9, 132, 227, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            z-index: 1000;
+            position: absolute;
+            left: 20px;
+            top: 20px;
+        }
+        
+        .btn-install:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(9, 132, 227, 0.4);
+        }
+        
+        .btn-install.installed {
+            background: linear-gradient(135deg, #00b894 0%, #55efc4 100%);
+            cursor: default;
+        }
+        
+        .btn-install.installed:hover {
+            transform: none;
+            box-shadow: 0 4px 12px rgba(9, 132, 227, 0.3);
+        }
+        
+        /* البطاقات */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .card-title {
+            color: #2d3436;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f2f6;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .card-title i {
+            color: #6c5ce7;
+        }
+        
+        /* حقول الإدخال */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            color: #2d3436;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-label i {
+            color: #6c5ce7;
+            font-size: 1.2rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #dfe6e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Cairo', sans-serif;
+            background: white;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #6c5ce7;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+        
+        select.form-control {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: left 15px center;
+            background-size: 20px;
+            padding-right: 15px;
+        }
+        
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+        
+        /* تواريخ الأسبوع */
+        .dates-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .date-box {
+            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+        }
+        
+        .date-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .date-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        
+        /* أزرار التنقل */
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        /* واجبات الأيام */
+        #daysContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .day-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            border-right: 5px solid;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+        
+        .day-card:hover {
+            transform: translateX(-5px);
+        }
+        
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .day-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .day-icon {
+            font-size: 1.4rem;
+        }
+        
+        .day-date {
+            color: #636e72;
+            font-size: 0.95rem;
+            background: #f8f9fa;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        
+        /* أزرار التحكم */
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #0984e3 0%, #00cec9 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(9, 132, 227, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(9, 132, 227, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #00b894 0%, #55efc4 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 184, 148, 0.4);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #fdcb6e 0%, #ffeaa7 100%);
+            color: #2d3436;
+            box-shadow: 0 5px 15px rgba(253, 203, 110, 0.3);
+        }
+        
+        .btn-warning:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(253, 203, 110, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e17055 0%, #fab1a0 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(225, 112, 85, 0.3);
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(225, 112, 85, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #a29bfe 0%, #dfe6e9 100%);
+            color: #2d3436;
+            box-shadow: 0 5px 15px rgba(162, 155, 254, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(162, 155, 254, 0.3);
+        }
+        
+        .btn-clear {
+            width: 100%;
+            background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+            color: #2d3436;
+            box-shadow: 0 5px 15px rgba(178, 190, 195, 0.2);
+        }
+        
+        .btn-clear:hover {
+            background: linear-gradient(135deg, #b2bec3 0%, #636e72 100%);
+            color: white;
+        }
+        
+        /* التحميل */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #6c5ce7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        .loading-text {
+            color: #2d3436;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        /* الرسائل */
+        .message {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            font-weight: 600;
+            border-right: 5px solid;
+            backdrop-filter: blur(10px);
+            animation: slideDown 0.5s ease;
+        }
+        
+        .message.success {
+            background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
+            color: white;
+            border-right-color: #00b894;
+        }
+        
+        .message.error {
+            background: linear-gradient(135deg, #fab1a0 0%, #e17055 100%);
+            color: white;
+            border-right-color: #e17055;
+        }
+        
+        .message.info {
+            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+            color: white;
+            border-right-color: #6c5ce7;
+        }
+        
+        /* الفوتر */
+        .footer {
+            text-align: center;
+            padding: 25px 20px;
+            color: white;
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .footer p {
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+        
+        .version {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        /* الأنيميشن */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* تصميم متجاوب */
+        @media (max-width: 768px) {
+            .app-title {
+                font-size: 1.8rem;
+            }
+            
+            .card-title {
+                font-size: 1.3rem;
+            }
+            
+            .control-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .dates-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .day-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .btn-install {
+                position: fixed !important;
+                bottom: 20px;
+                right: 20px;
+                left: auto;
+                top: auto;
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .app-title {
+                font-size: 1.5rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .btn {
+                padding: 14px;
+                font-size: 0.95rem;
+            }
+        }
+        
+        /* تأثيرات إضافية */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+        }
+        
+        /* تأثيرات على حقول الإدخال */
+        .form-control:invalid {
+            border-color: #e17055;
+        }
+        
+        .form-control:valid {
+            border-color: #55efc4;
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة التحميل -->
+    <div id="splashScreen">
+        <div class="splash-icon">📚</div>
+        <h1 class="splash-title">نظام الواجبات الأسبوعية</h1>
+        <p class="splash-text">جاري التحميل، الرجاء الانتظار...</p>
+        <div id="progressBar" style="width: 200px; height: 6px; background: rgba(255,255,255,0.3); border-radius: 3px; overflow: hidden;">
+            <div id="progressFill" style="width: 0%; height: 100%; background: white; transition: width 0.5s;"></div>
+        </div>
+    </div>
+    
+    <!-- المحتوى الرئيسي -->
+    <div id="appContent">
+        <!-- الهيدر -->
+        <div class="app-header">
+            <button id="installButton" class="btn-install" style="display: none;">
+                <i class="fas fa-download"></i> تثبيت التطبيق
+            </button>
+            
+            <h1 class="app-title">
+                <i class="fas fa-chalkboard-teacher"></i>
+                نظام الواجبات الأسبوعية
+            </h1>
+            <p class="app-subtitle">التجميع المركزي - مصمم خصيصاً للهاتف</p>
+        </div>
+        
+        <!-- البيانات الأساسية -->
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-cog"></i> البيانات الأساسية</h3>
+            
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-graduation-cap"></i> الصف الدراسي</label>
+                <select id="grade" class="form-control" required>
+                    <option value="">اختر الصف الدراسي</option>
+                    <option value="الأول">الصف الأول</option>
+                    <option value="الثاني">الصف الثاني</option>
+                    <option value="الثالث">الصف الثالث</option>
+                    <option value="الرابع">الصف الرابع</option>
+                    <option value="الخامس">الصف الخامس</option>
+                    <option value="السادس">الصف السادس</option>
+                    <option value="السابع">الصف السابع</option>
+                    <option value="الثامن">الصف الثامن</option>
+                    <option value="التاسع">الصف التاسع</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-users"></i> الشعبة</label>
+                <select id="class" class="form-control" required>
+                    <option value="">اختر الشعبة</option>
+                    <option value="أ">الشعبة أ</option>
+                    <option value="ب">الشعبة ب</option>
+                    <option value="ج">الشعبة ج</option>
+                    <option value="د">الشعبة د</option>
+                    <option value="جميع الشعب">جميع الشعب</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-book"></i> المادة الدراسية</label>
+                <select id="subject" class="form-control" required>
+                    <option value="">اختر المادة الدراسية</option>
+                    <option value="قرآن">قرآن</option>
+                    <option value="إسلامية">إسلامية</option>
+                    <option value="لغة عربية">لغة عربية</option>
+                    <option value="لغة إنجليزية">لغة إنجليزية</option>
+                    <option value="رياضيات">رياضيات</option>
+                    <option value="علوم">علوم</option>
+                    <option value="اجتماعيات">اجتماعيات</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-user"></i> اسم المعلم (اختياري)</label>
+                <input type="text" id="teacher" class="form-control" placeholder="أدخل اسمك للمرجعية">
+            </div>
+        </div>
+        
+        <!-- تواريخ الأسبوع -->
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-calendar-alt"></i> تواريخ الأسبوع</h3>
+            
+            <div class="dates-container" id="weekDates">
+                <!-- سيتم تعبئته بالجافاسكريبت -->
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="navigateWeek(-1)">
+                    <i class="fas fa-chevron-right"></i> الأسبوع السابق
+                </button>
+                <button class="btn btn-secondary" onclick="loadCurrentWeek()">
+                    <i class="fas fa-sync"></i> الأسبوع الحالي
+                </button>
+                <button class="btn btn-secondary" onclick="navigateWeek(1)">
+                    الأسبوع التالي <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- واجبات الأيام -->
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-tasks"></i> واجبات الأسبوع</h3>
+            <div id="daysContainer">
+                <!-- سيتم تعبئته بالجافاسكريبت -->
+            </div>
+        </div>
+        
+        <!-- أزرار التحكم -->
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-sliders-h"></i> التحكم</h3>
+            
+            <div class="control-grid">
+                <button class="btn btn-primary" onclick="loadHomework()">
+                    <i class="fas fa-search"></i> تحميل الواجبات
+                </button>
+                <button class="btn btn-success" onclick="saveHomework()">
+                    <i class="fas fa-save"></i> حفظ الواجبات
+                </button>
+                <button class="btn btn-warning" onclick="updateHomework()">
+                    <i class="fas fa-edit"></i> تعديل الواجبات
+                </button>
+                <button class="btn btn-danger" onclick="deleteHomework()">
+                    <i class="fas fa-trash-alt"></i> حذف الواجبات
+                </button>
+            </div>
+            
+            <button class="btn btn-clear" onclick="clearForm()">
+                <i class="fas fa-broom"></i> تفريغ النموذج بالكامل
+            </button>
+        </div>
+        
+        <!-- التحميل -->
+        <div class="loading" id="formLoading">
+            <div class="spinner"></div>
+            <p class="loading-text">جاري معالجة البيانات...</p>
+        </div>
+        
+        <!-- الرسائل -->
+        <div id="message" class="message"></div>
+        
+        <!-- الفوتر -->
+        <div class="footer">
+            <p>نظام الواجبات الأسبوعية &copy; 2023</p>
+            <p class="version">مصمم خصيصاً للعمل على الهاتف المحمول</p>
+            <p class="version">جميع البيانات محفوظة في Google Sheets</p>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+    // ============ إعدادات النظام ============
+    const TEACHER_API_URL = 'https://script.google.com/macros/s/AKfycbwJiw7_R3k5o8cgL1PxFZdSI9C9GFwGjKBwzT4RoymAz-XvQmDWLiaIyoodEdOEbM7P/exec';
+    
+    let currentWeekStart = null;
+    let currentWeekEnd = null;
+    
+    const daysOfWeek = [
+        { id: 'السبت', icon: 'fas fa-calendar-day', color: '#3498db', english: 'saturday' },
+        { id: 'الأحد', icon: 'fas fa-sun', color: '#f39c12', english: 'sunday' },
+        { id: 'الإثنين', icon: 'fas fa-moon', color: '#9b59b6', english: 'monday' },
+        { id: 'الثلاثاء', icon: 'fas fa-star', color: '#e74c3c', english: 'tuesday' },
+        { id: 'الأربعاء', icon: 'fas fa-cloud', color: '#1abc9c', english: 'wednesday' }
+    ];
+    
+    // ============ تهيئة التطبيق ============
+    window.addEventListener('load', function() {
+        const progressFill = document.getElementById('progressFill');
+        let progress = 0;
+        
+        const progressInterval = setInterval(() => {
+            progress += 10;
+            progressFill.style.width = progress + '%';
+            
+            if (progress >= 100) {
+                clearInterval(progressInterval);
+                setTimeout(() => {
+                    document.getElementById('splashScreen').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('splashScreen').style.display = 'none';
+                        document.getElementById('appContent').style.display = 'block';
+                        initApp();
+                    }, 500);
+                }, 500);
+            }
+        }, 200);
+    });
+    
+    function initApp() {
+        calculateCurrentWeek();
+        renderWeekDates();
+        renderDays();
+        setupEventListeners();
+        setupPWA();
+        testConnection();
+    }
+    
+    // ============ PWA Installation ============
+    let deferredPrompt;
+    const installButton = document.getElementById('installButton');
+    
+    function setupPWA() {
+        // استمع لحدث beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // منع المتصفح من عرض رسالة التثبيت التلقائية
+            e.preventDefault();
+            
+            // حفظ الحدث لاستخدامه لاحقاً
+            deferredPrompt = e;
+            
+            // إظهار زر التثبيت الخاص بنا
+            if (installButton) {
+                installButton.style.display = 'flex';
+                
+                // إضافة حدث النقر على الزر
+                installButton.addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        // عرض رسالة تثبيت المتصفح
+                        deferredPrompt.prompt();
+                        
+                        // انتظار اختيار المستخدم
+                        const { outcome } = await deferredPrompt.userChoice;
+                        
+                        // تسجيل النتيجة
+                        console.log(`المستخدم ${outcome === 'accepted' ? 'قبل' : 'رفض'} التثبيت`);
+                        
+                        if (outcome === 'accepted') {
+                            // تحديث واجهة الزر
+                            installButton.innerHTML = '<i class="fas fa-check"></i> مثبت';
+                            installButton.classList.add('installed');
+                            installButton.disabled = true;
+                            
+                            // عرض رسالة نجاح
+                            showMessage('✅ تم تثبيت التطبيق بنجاح!', 'success');
+                        }
+                        
+                        // مسح المتغير
+                        deferredPrompt = null;
+                    }
+                });
+            }
+        });
+        
+        // التحقق إذا كان التطبيق مثبتاً بالفعل
+        window.addEventListener('appinstalled', () => {
+            console.log('التطبيق مثبت بنجاح');
+            deferredPrompt = null;
+            
+            if (installButton) {
+                installButton.innerHTML = '<i class="fas fa-check"></i> مثبت';
+                installButton.classList.add('installed');
+                installButton.disabled = true;
+                installButton.style.display = 'flex';
+            }
+        });
+        
+        // التحقق من وضع التطبيق المثبت
+        function checkDisplayMode() {
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                console.log('التطبيق يعمل في وضع المثبت');
+                document.body.classList.add('standalone-mode');
+                
+                if (installButton) {
+                    installButton.innerHTML = '<i class="fas fa-check"></i> مثبت';
+                    installButton.classList.add('installed');
+                    installButton.disabled = true;
+                }
+            }
+        }
+        
+        // تشغيل التحقق عند تحميل الصفحة
+        checkDisplayMode();
+        
+        // Service Worker للتخزين المؤقت
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(registration => {
+                    console.log('ServiceWorker registered: ', registration.scope);
+                }).catch(error => {
+                    console.log('ServiceWorker registration failed: ', error);
+                });
+            });
+        }
+    }
+    
+    // ============ دوال التاريخ ============
+    function calculateCurrentWeek() {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        
+        let daysSinceSaturday;
+        if (dayOfWeek === 6) {
+            daysSinceSaturday = 0;
+        } else if (dayOfWeek === 0) {
+            daysSinceSaturday = 6;
+        } else {
+            daysSinceSaturday = dayOfWeek + 1;
+        }
+        
+        const lastSaturday = new Date(today);
+        lastSaturday.setDate(today.getDate() - daysSinceSaturday);
+        
+        currentWeekStart = new Date(lastSaturday);
+        currentWeekEnd = new Date(lastSaturday);
+        currentWeekEnd.setDate(lastSaturday.getDate() + 4);
+    }
+    
+    function formatDate(date) {
+        if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+            console.warn('تاريخ غير صحيح في formatDate:', date);
+            return 'غير محدد';
+        }
+        
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+    
+    function formatDateDisplay(date) {
+        if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+            return 'تاريخ غير محدد';
+        }
+        
+        try {
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            return date.toLocaleDateString('ar-EG', options);
+        } catch (e) {
+            console.error('خطأ في formatDateDisplay:', e);
+            return formatDate(date);
+        }
+    }
+    
+    function renderWeekDates() {
+        const container = document.getElementById('weekDates');
+        if (!container) return;
+        
+        const startDate = formatDate(currentWeekStart);
+        const endDate = formatDate(currentWeekEnd);
+        
+        container.innerHTML = `
+            <div class="date-box">
+                <div class="date-label">بداية الأسبوع</div>
+                <div class="date-value">${startDate}</div>
+            </div>
+            <div class="date-box">
+                <div class="date-label">نهاية الأسبوع</div>
+                <div class="date-value">${endDate}</div>
+            </div>
+        `;
+    }
+    
+    function renderDays() {
+        const container = document.getElementById('daysContainer');
+        if (!container) return;
+        
+        let html = '';
+        
+        daysOfWeek.forEach((day, index) => {
+            const currentDate = new Date(currentWeekStart);
+            currentDate.setDate(currentWeekStart.getDate() + index);
+            const dateDisplay = formatDateDisplay(currentDate);
+            
+            html += `
+                <div class="day-card" style="border-right-color: ${day.color}">
+                    <div class="day-header">
+                        <div class="day-name">
+                            <i class="${day.icon} day-icon"></i>
+                            ${day.id}
+                        </div>
+                        <div class="day-date">${dateDisplay}</div>
+                    </div>
+                    <textarea 
+                        id="homework_${day.id}" 
+                        class="form-control" 
+                        rows="4" 
+                        placeholder="أدخل واجب ${day.id} هنا..."
+                        dir="auto"
+                    ></textarea>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+    
+    // ============ دوال التنقل ============
+    function navigateWeek(direction) {
+        if (!currentWeekStart) calculateCurrentWeek();
+        
+        currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+        currentWeekEnd.setDate(currentWeekEnd.getDate() + (direction * 7));
+        
+        renderWeekDates();
+        renderDays();
+        
+        const grade = document.getElementById('grade')?.value;
+        const className = document.getElementById('class')?.value;
+        const subject = document.getElementById('subject')?.value;
+        
+        if (grade && className && subject) {
+            setTimeout(loadHomework, 300);
+        }
+    }
+    
+    function loadCurrentWeek() {
+        calculateCurrentWeek();
+        renderWeekDates();
+        renderDays();
+        
+        const grade = document.getElementById('grade')?.value;
+        const className = document.getElementById('class')?.value;
+        const subject = document.getElementById('subject')?.value;
+        
+        if (grade && className && subject) {
+            setTimeout(loadHomework, 300);
+        }
+    }
+    
+    // ============ دوال API ============
+    function callAPI(action, data) {
+        showLoading(true);
+        
+        return new Promise((resolve) => {
+            const callbackName = 'callback_' + Math.random().toString(36).substr(2, 9);
+            const timeoutId = setTimeout(() => {
+                cleanup();
+                showLoading(false);
+                resolve({ 
+                    success: false, 
+                    error: "انتهت مهلة الاتصال (15 ثانية)" 
+                });
+            }, 15000);
+            
+            function cleanup() {
+                clearTimeout(timeoutId);
+                delete window[callbackName];
+                const script = document.getElementById(`script_${callbackName}`);
+                if (script && script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+            }
+            
+            window[callbackName] = function(result) {
+                cleanup();
+                showLoading(false);
+                console.log(`✅ API Response [${action}]:`, result);
+                resolve(result);
+            };
+            
+            let url = `${TEACHER_API_URL}?action=${action}&callback=${callbackName}&_t=${Date.now()}`;
+            
+            if (data && typeof data === 'object') {
+                for (const key in data) {
+                    if (data[key] !== null && data[key] !== undefined && data[key] !== '') {
+                        url += `&${key}=${encodeURIComponent(data[key].toString().trim())}`;
+                    }
+                }
+            }
+            
+            console.log(`📤 API Request [${action}]:`, url);
+            
+            const script = document.createElement('script');
+            script.id = `script_${callbackName}`;
+            script.src = url;
+            
+            script.onerror = function() {
+                cleanup();
+                showLoading(false);
+                resolve({ 
+                    success: false, 
+                    error: "❌ فشل تحميل السكريبت - تحقق من رابط API والأذونات" 
+                });
+            };
+            
+            document.body.appendChild(script);
+        });
+    }
+    
+    // ============ دوال التحكم الرئيسية ============
+    function collectHomeworkDataForSave() {
+        const grade = document.getElementById('grade')?.value;
+        const className = document.getElementById('class')?.value;
+        const subject = document.getElementById('subject')?.value;
+        const teacher = document.getElementById('teacher')?.value;
+        
+        if (!grade || !className || !subject) {
+            showMessage('📝 الرجاء اختيار الصف، الشعبة، والمادة أولاً', 'info');
+            return null;
+        }
+        
+        const data = {
+            grade: grade.trim(),
+            class: className.trim(),
+            section: className.trim(),
+            subject: subject.trim(),
+            saturdayDate: formatDate(currentWeekStart)
+        };
+        
+        // إضافة واجبات الأيام بأسماء إنجليزية (للتوافق مع كود Apps Script)
+        daysOfWeek.forEach(day => {
+            const textarea = document.getElementById(`homework_${day.id}`);
+            if (textarea && textarea.value.trim()) {
+                data[day.english] = textarea.value.trim();
+                data[day.id.toLowerCase()] = textarea.value.trim();
+            }
+        });
+        
+        if (teacher && teacher.trim()) {
+            data.teacher = teacher.trim();
+        }
+        
+        console.log('📝 بيانات الحفظ المجمعة:', data);
+        return data;
+    }
+    
+    async function loadHomework() {
+        const grade = document.getElementById('grade')?.value;
+        const className = document.getElementById('class')?.value;
+        const subject = document.getElementById('subject')?.value;
+        
+        if (!grade || !className || !subject) {
+            showMessage('📝 الرجاء اختيار الصف، الشعبة، والمادة أولاً', 'info');
+            return;
+        }
+        
+        const saturdayDate = formatDate(currentWeekStart);
+        
+        const params = {
+            grade: grade,
+            section: className,
+            subject: subject,
+            saturdayDate: saturdayDate
+        };
+        
+        console.log('🔍 جاري تحميل الواجبات:', params);
+        
+        const result = await callAPI('getHomework', params);
+        
+        if (result.success) {
+            if (result.exists) {
+                console.log('✅ تم العثور على واجبات:', result.homework);
+                
+                // تعبئة حقول الواجبات
+                daysOfWeek.forEach(day => {
+                    const textarea = document.getElementById(`homework_${day.id}`);
+                    if (textarea && result.homework[day.id]) {
+                        textarea.value = result.homework[day.id] || '';
+                    }
+                });
+                
+                // تعبئة اسم المعلم
+                if (result.teacher) {
+                    const teacherInput = document.getElementById('teacher');
+                    if (teacherInput) teacherInput.value = result.teacher;
+                }
+                
+                showMessage('✅ تم تحميل الواجبات بنجاح', 'success');
+            } else {
+                showMessage('📝 لا توجد واجبات مسجلة لهذا الأسبوع', 'info');
+                clearHomeworkFields();
+            }
+        } else {
+            showMessage('❌ ' + (result.error || 'حدث خطأ غير معروف'), 'error');
+            console.error('تفاصيل الخطأ:', result);
+        }
+    }
+    
+    async function saveHomework() {
+        const homeworkData = collectHomeworkDataForSave();
+        if (!homeworkData) return;
+        
+        // التحقق من وجود واجبات على الأقل
+        const hasHomework = daysOfWeek.some(day => {
+            return homeworkData[day.english] || homeworkData[day.id.toLowerCase()];
+        });
+        
+        if (!hasHomework) {
+            if (!confirm('⚠️ جميع حقول الواجبات فارغة.\nهل تريد الاستمرار في الحفظ؟')) {
+                return;
+            }
+        }
+        
+        if (!confirm('💾 هل تريد حفظ الواجبات الجديدة؟')) {
+            return;
+        }
+        
+        console.log('💾 جاري حفظ البيانات:', homeworkData);
+        
+        const result = await callAPI('saveHomework', homeworkData);
+        
+        if (result.success) {
+            showMessage('✅ ' + (result.message || 'تم حفظ الواجبات بنجاح'), 'success');
+            
+            // تحديث البيانات بعد الحفظ
+            setTimeout(() => {
+                loadHomework();
+            }, 1500);
+        } else {
+            let errorMessage = result.error || 'حدث خطأ في الحفظ';
+            
+            // تحسين رسالة الخطأ
+            if (errorMessage.includes('already exists') || errorMessage.includes('مسجلة بالفعل')) {
+                errorMessage += '<br><br>💡 استخدم زر "تعديل الواجبات" بدلاً من الحفظ';
+            }
+            
+            if (errorMessage.includes('مطلوب')) {
+                errorMessage += '<br><br>💡 تأكد من ملء جميع الحقول المطلوبة';
+            }
+            
+            showMessage('❌ ' + errorMessage, 'error');
+            console.error('🔴 تفاصيل خطأ الحفظ:', result);
+            
+            if (result.details) {
+                console.error('🔴 تفاصيل تقنية:', result.details);
+            }
+        }
+    }
+    
+    async function updateHomework() {
+        const homeworkData = collectHomeworkDataForSave();
+        if (!homeworkData) return;
+        
+        if (!confirm('✏️ هل تريد تعديل الواجبات الحالية؟')) {
+            return;
+        }
+        
+        console.log('✏️ جاري تعديل البيانات:', homeworkData);
+        
+        const result = await callAPI('updateHomework', homeworkData);
+        
+        if (result.success) {
+            showMessage('✅ ' + (result.message || 'تم تعديل الواجبات بنجاح'), 'success');
+            
+            // تحديث البيانات بعد التعديل
+            setTimeout(() => {
+                loadHomework();
+            }, 1500);
+        } else {
+            let errorMessage = result.error || 'حدث خطأ في التعديل';
+            
+            if (errorMessage.includes('لم يتم العثور')) {
+                errorMessage += '<br><br>💡 استخدم زر "حفظ الواجبات" لإنشاء جديد';
+            }
+            
+            showMessage('❌ ' + errorMessage, 'error');
+        }
+    }
+    
+    async function deleteHomework() {
+        const grade = document.getElementById('grade')?.value;
+        const className = document.getElementById('class')?.value;
+        const subject = document.getElementById('subject')?.value;
+        
+        if (!grade || !className || !subject) {
+            showMessage('📝 الرجاء اختيار الصف، الشعبة، والمادة أولاً', 'info');
+            return;
+        }
+        
+        if (!confirm('⚠️ ❗❗ تأكيد الحذف ❗❗\n\nهل أنت متأكد من حذف واجبات هذا الأسبوع؟\nهذا الإجراء لا يمكن التراجع عنه.')) {
+            return;
+        }
+        
+        const data = {
+            grade: grade,
+            class: className,
+            subject: subject,
+            saturdayDate: formatDate(currentWeekStart)
+        };
+        
+        console.log('🗑️ جاري حذف البيانات:', data);
+        
+        const result = await callAPI('deleteHomework', data);
+        
+        if (result.success) {
+            showMessage('✅ ' + (result.message || 'تم حذف الواجبات بنجاح'), 'success');
+            clearHomeworkFields();
+        } else {
+            showMessage('❌ ' + (result.error || 'حدث خطأ في الحذف'), 'error');
+        }
+    }
+    
+    async function testConnection() {
+        console.log('🔗 جاري اختبار الاتصال...');
+        
+        const result = await callAPI('ping');
+        if (result && result.success) {
+            console.log('✅ الاتصال مع النظام ناجح:', result);
+            
+            let message = `✅ الاتصال مع النظام ناجح<br>`;
+            message += `📋 ${result.system || 'نظام المعلمين'}<br>`;
+            message += `📝 ${result.message || 'نشط وجاهز'}<br>`;
+            message += `🕒 ${new Date().toLocaleString('ar-SA')}`;
+            
+            showMessage(message, 'success', 6000);
+            
+            setTimeout(checkSheetStructure, 2000);
+        } else {
+            console.error('❌ فشل الاتصال:', result);
+            
+            let errorMsg = '❌ فشل الاتصال مع النظام';
+            if (result && result.error) {
+                errorMsg += `<br>${result.error}`;
+            }
+            
+            showMessage(errorMsg, 'error', 8000);
+        }
+    }
+    
+    async function checkSheetStructure() {
+        console.log('🔍 جاري التحقق من هيكل الجدول...');
+        
+        const result = await callAPI('getHomework', {
+            grade: 'الثامن',
+            section: 'ب',
+            subject: 'رياضيات',
+            saturdayDate: '27/12/2025'
+        });
+        
+        console.log('نتيجة التحقق:', result);
+        
+        if (result.success) {
+            if (result.exists) {
+                console.log('✅ هيكل الجدول يعمل بشكل صحيح');
+                showMessage(
+                    '✅ هيكل الجدول يعمل بشكل صحيح<br>' +
+                    '✅ النظام جاهز للحفظ والتعديل',
+                    'success', 4000
+                );
+            } else {
+                console.log('⚠️ الجدول يعمل ولكن لا توجد بيانات للصف المحدد');
+            }
+        } else {
+            console.warn('⚠️ قد تكون هناك مشكلة في هيكل الجدول:', result.error);
+        }
+    }
+    
+    // ============ دوال مساعدة ============
+    function clearHomeworkFields() {
+        daysOfWeek.forEach(day => {
+            const textarea = document.getElementById(`homework_${day.id}`);
+            if (textarea) textarea.value = '';
+        });
+        const teacherInput = document.getElementById('teacher');
+        if (teacherInput) teacherInput.value = '';
+    }
+    
+    function clearForm() {
+        if (!confirm('🧹 هل تريد تفريغ جميع الحقول؟')) {
+            return;
+        }
+        
+        const gradeSelect = document.getElementById('grade');
+        const classSelect = document.getElementById('class');
+        const subjectSelect = document.getElementById('subject');
+        const teacherInput = document.getElementById('teacher');
+        
+        if (gradeSelect) gradeSelect.selectedIndex = 0;
+        if (classSelect) classSelect.selectedIndex = 0;
+        if (subjectSelect) subjectSelect.selectedIndex = 0;
+        if (teacherInput) teacherInput.value = '';
+        
+        clearHomeworkFields();
+        
+        showMessage('🧹 تم تفريغ النموذج بالكامل', 'info');
+    }
+    
+    function setupEventListeners() {
+        // تحميل تلقائي عند اختيار البيانات
+        const fields = ['grade', 'class', 'subject'];
+        fields.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', function() {
+                    const grade = document.getElementById('grade')?.value;
+                    const className = document.getElementById('class')?.value;
+                    const subject = document.getElementById('subject')?.value;
+                    
+                    if (grade && className && subject) {
+                        setTimeout(() => {
+                            loadHomework();
+                        }, 300);
+                    }
+                });
+            }
+        });
+        
+        // إضافة خاصية autosave لمساحات النص
+        daysOfWeek.forEach(day => {
+            const textareaId = `homework_${day.id}`;
+            const textarea = document.getElementById(textareaId);
+            if (textarea) {
+                textarea.addEventListener('blur', function() {
+                    const grade = document.getElementById('grade')?.value;
+                    const className = document.getElementById('class')?.value;
+                    const subject = document.getElementById('subject')?.value;
+                    
+                    if (grade && className && subject && this.value.trim() !== '') {
+                        console.log(`📝 تم تحديث ${day.id}`);
+                    }
+                });
+            }
+        });
+        
+        // إضافة تحذير إذا حاول المستخدم تحديث الصفحة
+        window.addEventListener('beforeunload', function(e) {
+            const grade = document.getElementById('grade')?.value;
+            const className = document.getElementById('class')?.value;
+            const subject = document.getElementById('subject')?.value;
+            
+            let hasData = false;
+            daysOfWeek.forEach(day => {
+                const textarea = document.getElementById(`homework_${day.id}`);
+                if (textarea && textarea.value.trim()) {
+                    hasData = true;
+                }
+            });
+            
+            if ((grade || className || subject || hasData)) {
+                const confirmationMessage = '⚠️ لديك بيانات غير محفوظة. هل تريد المغادرة؟';
+                e.returnValue = confirmationMessage;
+                return confirmationMessage;
+            }
+        });
+    }
+    
+    function showMessage(text, type, duration = 5000) {
+        const messageDiv = document.getElementById('message');
+        if (!messageDiv) {
+            console.error('❌ عنصر الرسالة غير موجود');
+            return;
+        }
+        
+        messageDiv.innerHTML = text;
+        messageDiv.className = `message ${type}`;
+        messageDiv.style.display = 'block';
+        
+        if (duration > 7000) {
+            messageDiv.innerHTML += '<button onclick="this.parentElement.style.display=\'none\'" style="margin-right: 10px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; float: left;">✕</button>';
+        }
+        
+        setTimeout(() => {
+            if (messageDiv.style.display !== 'none') {
+                messageDiv.style.display = 'none';
+            }
+        }, duration);
+    }
+    
+    function showLoading(show) {
+        const loadingDiv = document.getElementById('formLoading');
+        if (loadingDiv) {
+            loadingDiv.style.display = show ? 'block' : 'none';
+        }
+    }
+    
+    // ============ تشخيص النظام ============
+    function diagnoseSystem() {
+        console.group('===== تشخيص النظام =====');
+        console.log('1. رابط API:', TEACHER_API_URL);
+        console.log('2. اليوم الحالي:', new Date().toLocaleString('ar-SA'));
+        
+        if (currentWeekStart) {
+            console.log('3. تاريخ السبت الحالي:', formatDate(currentWeekStart));
+        } else {
+            console.log('3. تاريخ السبت الحالي:', 'لم يتم حساب الأسبوع بعد');
+        }
+        
+        if (currentWeekEnd) {
+            console.log('4. تاريخ الأربعاء:', formatDate(currentWeekEnd));
+        } else {
+            console.log('4. تاريخ الأربعاء:', 'لم يتم حساب الأسبوع بعد');
+        }
+        
+        console.log('5. حالة العناصر:');
+        console.log('   - grade:', document.getElementById('grade')?.value || 'غير محدد');
+        console.log('   - class:', document.getElementById('class')?.value || 'غير محدد');
+        console.log('   - subject:', document.getElementById('subject')?.value || 'غير محدد');
+        console.log('   - teacher:', document.getElementById('teacher')?.value || 'فارغ');
+        
+        console.log('6. حالة حقول الواجبات:');
+        daysOfWeek.forEach(day => {
+            const textarea = document.getElementById(`homework_${day.id}`);
+            console.log(`   - ${day.id}:`, textarea?.value ? 'مملوء' : 'فارغ');
+        });
+        
+        console.groupEnd();
+        
+        console.log('🔍 اختبار الاتصال السريع...');
+        fetch(TEACHER_API_URL + '?action=ping&_t=' + Date.now())
+            .then(response => response.text())
+            .then(data => {
+                console.log('✅ استجابة السيرفر:', data.substring(0, 100) + '...');
+            })
+            .catch(error => {
+                console.error('❌ خطأ في اختبار الاتصال:', error);
+            });
+    }
+    
+    // ============ بدء التشغيل ============
+    setTimeout(() => {
+        console.log('✅ نظام المعلمين محمل بنجاح');
+        console.log('📅 تاريخ النظام:', new Date().toISOString());
+        console.log('🔗 رابط API المحدد:', TEACHER_API_URL);
+        
+        setTimeout(diagnoseSystem, 1000);
+    }, 500);
+    
+    setTimeout(() => {
+        console.log('🔍 بدء اختبار النظام التلقائي...');
+        
+        if (TEACHER_API_URL && !TEACHER_API_URL.includes('...')) {
+            console.log('✅ رابط API محدد، بدء اختبار الاتصال...');
+        } else {
+            console.warn('⚠️ رابط API غير محدد أو غير صحيح');
+            showMessage(
+                '⚠️ يرجى التحقق من رابط API<br>' +
+                'تأكد من نسخ الرابط من "نشر كتطبيق ويب" في Google Apps Script',
+                'error',
+                10000
+            );
+        }
+    }, 2000);
+    
+    // إضافة أوامر للتحكم من وحدة التحكم
+    window.diagnose = diagnoseSystem;
+    window.testAPI = testConnection;
+    window.reloadData = loadHomework;
+    window.clearAll = clearForm;
+    window.saveTest = async function() {
+        const testData = {
+            grade: 'الثامن',
+            class: 'ب',
+            subject: 'رياضيات',
+            saturdayDate: '28/12/2025',
+            teacher: 'اختبار',
+            saturday: 'واجب اختبار السبت',
+            sunday: 'واجب اختبار الأحد'
+        };
+        console.log('🧪 اختبار الحفظ:', testData);
+        const result = await callAPI('saveHomework', testData);
+        console.log('نتيجة الاختبار:', result);
+        return result;
+    };
+    
+    console.log('💡 أوامر وحدة التحكم المتاحة:');
+    console.log('   - diagnose(): تشخيص النظام');
+    console.log('   - testAPI(): اختبار الاتصال');
+    console.log('   - reloadData(): إعادة تحميل البيانات');
+    console.log('   - clearAll(): تفريغ النموذج');
+    console.log('   - saveTest(): اختبار الحفظ');
+    </script>
+</body>
+</html>
