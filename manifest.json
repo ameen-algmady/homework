@@ -1,0 +1,26 @@
+{
+  "name": "نظام الواجبات الأسبوعية",
+  "short_name": "الواجبات",
+  "description": "نظام إدخال الواجبات المدرسية للمعلمين",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "https://ameen-algmady.github.io/homework/",
+  "scope": "https://ameen-algmady.github.io/homework/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#6c5ce7",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "https://ameen-algmady.github.io/homework/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://ameen-algmady.github.io/homework/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
