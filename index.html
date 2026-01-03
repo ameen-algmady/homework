@@ -950,26 +950,20 @@
     }
     
     // ============ دوال التاريخ ============
-    function calculateCurrentWeek() {
-        const today = new Date();
-        const dayOfWeek = today.getDay();
-        
-        let daysSinceSaturday;
-        if (dayOfWeek === 6) {
-            daysSinceSaturday = 0;
-        } else if (dayOfWeek === 0) {
-            daysSinceSaturday = 6;
-        } else {
-            daysSinceSaturday = dayOfWeek + 1;
-        }
-        
-        const lastSaturday = new Date(today);
-        lastSaturday.setDate(today.getDate() - daysSinceSaturday);
-        
-        currentWeekStart = new Date(lastSaturday);
-        currentWeekEnd = new Date(lastSaturday);
-        currentWeekEnd.setDate(lastSaturday.getDate() + 4);
-    }
+   function calculateCurrentWeek() {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0-6
+    
+    // خريطة الأيام للرجوع إلى السبت
+    const daysBackMap = [1, 2, 3, 4, 5, 6, 0];
+    
+    const saturday = new Date(today);
+    saturday.setDate(today.getDate() - daysBackMap[dayOfWeek]);
+    
+    currentWeekStart = saturday;
+    currentWeekEnd = new Date(saturday);
+    currentWeekEnd.setDate(saturday.getDate() + 4);
+}
     
     function formatDate(date) {
         if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
